@@ -1,6 +1,7 @@
 #pragma once
 
 #include "geo.h"
+#include "detail.h"
 #include <string>
 #include <vector>
 #include <string_view>
@@ -15,26 +16,8 @@ namespace database::transport_catalogue
 {
 
     using namespace database::geo;
-
-    struct StringViewHash
-    {
-        using is_transparent = void;
-
-        size_t operator()(std::string_view sv) const noexcept
-        {
-            return std::hash<std::string_view>{}(sv);
-        }
-    };
-
-    struct StringViewEqual
-    {
-        using is_transparent = void;
-
-        bool operator()(std::string_view lhs, std::string_view rhs) const noexcept
-        {
-            return lhs == rhs;
-        }
-    };
+    using namespace database::detail;
+    
 
     struct Stop
     {
