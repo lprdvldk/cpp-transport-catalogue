@@ -7,6 +7,7 @@ namespace database::output
 
     using namespace transport_catalogue;
 
+    // Used, because i have to compare refs' names. Don't know how to use std::less in this case.
     auto comparator = [](auto lhs, auto rhs)
     {
         return lhs->name < rhs->name;
