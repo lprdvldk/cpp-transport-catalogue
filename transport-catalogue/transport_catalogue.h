@@ -32,20 +32,12 @@ namespace database::transport_catalogue
 
     struct BusInfoResult
     {
-        bool found;
-        std::string_view name;
         size_t stops_on_route;
         size_t unique_stops;
         double route_length;
     };
 
-    struct StopInfoResult
-    {
-        bool found = false;
-        bool has_busses = false;
-        std::string_view name;
-        const std::unordered_set<const Bus *> busses;
-    };
+    using BusesByStop = std::unordered_set<const Bus *>;
 
     class TransportCatalogue
     {
@@ -62,14 +54,14 @@ namespace database::transport_catalogue
 
         const Stop *FindStop(std::string_view name) const;
 
-        BusInfoResult BusInfo(std::string_view name) const;
+        std::pair<BusInfoResult, bool> BusInfo(std::string_view name) const;
 
-        StopInfoResult StopInfo(std::string_view name) const;
+        std::pair<BusesByStop, bool> StopInfo(std::string_view name) const;
 
     private:
         std::unordered_map<std::string_view, const Stop *, StringViewHash, StringViewEqual> stops_{};
         std::unordered_map<std::string_view, const Bus *, StringViewHash, StringViewEqual> buses_{};
-        std::unordered_map<const Stop *, std::unordered_set<const Bus *>> buses_by_stops_{};
+        std::unordered_map<const Stop *, BusesByStop> buses_by_stops_{};
 
         std::deque<Bus> buses_deque_{};
         std::deque<Stop> stops_deque_{};
@@ -100,7 +92,7 @@ namespace database::transport_catalogue
             }
         }
 
-        std::unordered_set<const Bus *> FindBusesByStop(const Stop *stop) const
+        BusesByStop FindBusesByStop(const Stop *stop) const
         {
             auto ptr = buses_by_stops_.find(stop);
             if (ptr != buses_by_stops_.end())

@@ -126,7 +126,7 @@ namespace database::input
     void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue &catalogue) const
     {
         // Реализуйте метод самостоятельно
-        for (const CommandDescription& command : commands_)
+        for (const CommandDescription &command : commands_)
         {
             if (command.command == "Stop")
             {
@@ -134,13 +134,12 @@ namespace database::input
             }
         }
 
-        for (const CommandDescription& command : commands_)
+        for (const CommandDescription &command : commands_)
         {
             if (command.command == "Bus")
             {
                 auto route_names = ParseRoute(std::move(command.description));
                 catalogue.AddBus(command.id, std::move(route_names));
-                
             }
         }
     }
