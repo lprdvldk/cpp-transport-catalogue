@@ -126,27 +126,21 @@ namespace database::input
     void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue &catalogue) const
     {
         // Реализуйте метод самостоятельно
-        for (auto command : commands_)
+        for (const CommandDescription& command : commands_)
         {
             if (command.command == "Stop")
             {
-                Stop stop{command.id, ParseCoordinates(std::move(command.description))};
-                catalogue.AddStop(std::move(stop));
+                catalogue.AddStop(command.id, ParseCoordinates(std::move(command.description)));
             }
         }
 
-        for (auto command : commands_)
+        for (const CommandDescription& command : commands_)
         {
             if (command.command == "Bus")
             {
                 auto route_names = ParseRoute(std::move(command.description));
-                std::vector<const Stop *> tmp;
-                for (std::string_view name : route_names)
-                {
-                    tmp.push_back(catalogue.FindStop(name));
-                }
-                Bus bus{command.id, std::move(tmp)};
-                catalogue.AddBus(std::move(bus));
+                catalogue.AddBus(command.id, std::move(route_names));
+                
             }
         }
     }

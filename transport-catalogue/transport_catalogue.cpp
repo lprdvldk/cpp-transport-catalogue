@@ -3,8 +3,15 @@
 namespace database::transport_catalogue
 {
 
-    void TransportCatalogue::AddBus(Bus bus)
+    void TransportCatalogue::AddBus(const std::string &name, const std::vector<std::string_view> &route_names)
     {
+        std::vector<const Stop *> tmp;
+        for (const std::string_view &name : route_names)
+        {
+            tmp.push_back(FindStop(name));
+        }
+        Bus bus{name, std::move(tmp)};
+
         buses_deque_.push_back(std::move(bus));
         const Bus &stored_bus = buses_deque_.back();
 
@@ -13,21 +20,23 @@ namespace database::transport_catalogue
         AddBusToStopIndex(stored_bus);
     }
 
-    void TransportCatalogue::AddStop(Stop stop)
+    void TransportCatalogue::AddStop(const std::string &name, Coordinates coords)
     {
+        Stop stop{name, coords};
+
         stops_deque_.push_back(std::move(stop));
         const Stop &stored_stop = stops_deque_.back();
 
         stops_.emplace(stored_stop.name, &stored_stop);
     }
 
-    std::string TransportCatalogue::BusInfo(std::string_view name) const
+    BusInfoResult TransportCatalogue::BusInfo(std::string_view name) const
     {
         const Bus *bus = FindBus(name);
 
         if (!bus)
         {
-            return std::format("Bus {}: not found", name);
+            return {false, name};
         }
 
         auto num_stops = bus->route.size();
@@ -50,55 +59,38 @@ namespace database::transport_catalogue
             route_length += ComputeDistance(first, second);
             first = second;
         }
-
-        return std::format("Bus {}: {} stops on route, {} unique stops, {:.6g} route length",
-                           bus->name, num_stops, num_unique_stops, route_length);
+        return {
+            true,
+            bus->name,
+            num_stops,
+            num_unique_stops,
+            route_length};
     }
 
-    std::string TransportCatalogue::StopInfo(std::string_view name) const
+    StopInfoResult TransportCatalogue::StopInfo(std::string_view name) const
     {
         const Stop *stop = FindStop(name);
 
         if (!stop)
         {
-            return std::format("Stop {}: not found", name);
+            return {false, false, name, {}};
         }
 
-        auto buses = FindBusesByStop(stop);
-        if (buses.size() == 0)
+        auto busses = FindBusesByStop(stop);
+
+        if (busses.size() == 0)
         {
-            return std::format("Stop {}: no buses", name);
+            return {
+                true,
+                false,
+                name,
+                {}};
         }
-
-        // std::string result = "Stop " + stop->name + ": ";
-        std::string result = std::format("Stop {}: buses", name);
-        for (auto bus : buses)
-        {
-            result.append(" " + bus->name);
-        }
-        return result;
-    }
-
-    std::vector<const Bus *> TransportCatalogue::FindBusesByStop(const Stop *stop) const
-    {
-
-        auto comparator = [](auto lhs, auto rhs)
-        {
-            return lhs->name <= rhs->name;
-        };
-
-        auto ptr = buses_by_stops_.find(stop);
-        if (ptr != buses_by_stops_.end())
-        {
-            std::vector<const Bus *> tmp;
-            for (auto bus : ptr->second)
-            {
-                tmp.push_back(bus);
-            }
-            std::sort(tmp.begin(), tmp.end(), comparator);
-            return tmp;
-        }
-        return {};
+        return {
+            true,
+            true,
+            name,
+            busses};
     }
 
     const Bus *TransportCatalogue::FindBus(std::string_view name) const
