@@ -11,6 +11,7 @@
 #include <format>
 #include <functional>
 #include <algorithm>
+#include <optional>
 
 namespace database::transport_catalogue
 {
@@ -54,9 +55,9 @@ namespace database::transport_catalogue
 
         const Stop *FindStop(std::string_view name) const;
 
-        std::pair<BusInfoResult, bool> BusInfo(std::string_view name) const;
+        std::optional<BusInfoResult> BusInfo(std::string_view name) const;
 
-        std::pair<BusesByStop, bool> StopInfo(std::string_view name) const;
+        std::optional<BusesByStop> StopInfo(std::string_view name) const;
 
     private:
         std::unordered_map<std::string_view, const Stop *, StringViewHash, StringViewEqual> stops_{};

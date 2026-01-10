@@ -30,13 +30,13 @@ namespace database::transport_catalogue
         stops_.emplace(stored_stop.name, &stored_stop);
     }
 
-    std::pair<BusInfoResult, bool> TransportCatalogue::BusInfo(std::string_view name) const
+    std::optional<BusInfoResult> TransportCatalogue::BusInfo(std::string_view name) const
     {
         const Bus *bus = FindBus(name);
 
         if (!bus)
         {
-            return std::make_pair<BusInfoResult, bool>({}, false);
+            return std::nullopt;
         }
 
         auto num_stops = bus->route.size();
@@ -59,26 +59,26 @@ namespace database::transport_catalogue
             route_length += ComputeDistance(first, second);
             first = second;
         }
-        return std::make_pair<BusInfoResult, bool>({num_stops, num_unique_stops, route_length}, true);
+        return std::make_optional<BusInfoResult>({num_stops, num_unique_stops, route_length});
     }
 
-    std::pair<BusesByStop, bool> TransportCatalogue::StopInfo(std::string_view name) const
+    std::optional<BusesByStop> TransportCatalogue::StopInfo(std::string_view name) const
     {
         const Stop *stop = FindStop(name);
 
         if (!stop)
         {
-            return std::make_pair<BusesByStop, bool>({}, false);
+            return std::nullopt;
         }
 
         auto busses = FindBusesByStop(stop);
 
         if (busses.size() == 0)
         {
-            return std::make_pair<BusesByStop, bool>({}, true);
+            return std::make_optional<BusesByStop>({});
         }
 
-        return std::make_pair<BusesByStop, bool>(std::move(busses), true);
+        return std::make_optional<BusesByStop>(std::move(busses));
     }
 
     const Bus *TransportCatalogue::FindBus(std::string_view name) const

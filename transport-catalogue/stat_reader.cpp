@@ -14,12 +14,12 @@ namespace database::output
     void PrintBusInfo(const TransportCatalogue &transport_catalogue, std::string_view name, std::ostream &output)
     {
         auto info = transport_catalogue.BusInfo(name);
-        if (!info.second)
+        if (!info.has_value())
         {
             output << std::format("Bus {}: not found", name) << "\n";
             return;
         }
-        auto bus = info.first;
+        auto bus = *info;
 
         output << std::format(
                       "Bus {}: {} stops on route, {} unique stops, {:.6g} route length",
@@ -30,13 +30,13 @@ namespace database::output
     void PrintStopInfo(const TransportCatalogue &transport_catalogue, std::string_view name, std::ostream &output)
     {
         auto info = transport_catalogue.StopInfo(name);
-        if (!info.second)
+        if (!info.has_value())
         {
             output << std::format("Stop {}: not found", name) << "\n";
             return;
         }
 
-        auto busses = info.first;
+        auto busses = *info;
         if (busses.size() == 0)
         {
             output << std::format("Stop {}: no buses", name) << "\n";
