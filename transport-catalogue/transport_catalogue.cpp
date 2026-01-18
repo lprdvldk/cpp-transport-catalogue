@@ -1,5 +1,4 @@
 #include "transport_catalogue.h"
-#include <iostream>
 
 namespace database::transport_catalogue {
 
