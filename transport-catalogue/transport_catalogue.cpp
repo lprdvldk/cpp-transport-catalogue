@@ -89,10 +89,10 @@ const Stop *TransportCatalogue::FindStop(std::string_view name) const {
 }
 
 int TransportCatalogue::GetDistance(const Stop *from, const Stop *to) const {
-  auto pair_ptr = distance_between_stops_.find({from, to});
+  auto pair_ptr = distance_between_stops_.find(std::make_pair(from, to));
 
   if (pair_ptr == distance_between_stops_.end()) {
-    auto pair_ptr = distance_between_stops_.find({from, to});
+    auto pair_ptr = distance_between_stops_.find(std::make_pair(to, from));
     return pair_ptr->second;
   }
 
