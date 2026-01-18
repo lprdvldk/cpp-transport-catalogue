@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <regex>
 #include <iterator>
 
 namespace database::input {
@@ -110,20 +111,77 @@ void InputReader::ParseLine(std::string_view line) {
   }
 }
 
+std::vector<std::pair<std::string, int>> ParseDistances(std::string_view distances_str) {
+    std::vector<std::pair<std::string, int>> distances;
+    
+    std::regex pattern(R"(\s*(\d+)\s*m\s+to\s+([^,]+))");
+    
+    std::string str(distances_str);
+    std::sregex_iterator begin(str.begin(), str.end(), pattern);
+    std::sregex_iterator end;
+    
+    for (auto it = begin; it != end; ++it) {
+        auto match = *it;
+        if (match.size() >= 3) {
+          int distance = std::stoi(match[1].str());
+          std::string stop_name = match[2].str();
+          
+          stop_name.erase(stop_name.find_last_not_of(" \t\n\r") + 1);
+          
+          if (!stop_name.empty() && distance > 0) {
+              distances.emplace_back(std::move(stop_name), distance);
+          }
+        }
+    }
+    
+    return distances;
+}
+
 void InputReader::ApplyCommands(
-    [[maybe_unused]] TransportCatalogue &catalogue) const {
-  // Реализуйте метод самостоятельно
+    TransportCatalogue &catalogue) const {
+
   for (const CommandDescription &command : commands_) {
     if (command.command == "Stop") {
-      catalogue.AddStop(command.id,
-                        ParseCoordinates(std::move(command.description)));
+      auto first_comma = command.description.find(',');
+      if (first_comma == std::string::npos) {
+        continue;
+      }
+      auto second_comma = command.description.find(',', first_comma + 1);
+
+      auto coords_str = command.description.substr(0, second_comma);
+      
+      catalogue.AddStop(command.id, ParseCoordinates(coords_str));
+      
     }
   }
 
   for (const CommandDescription &command : commands_) {
     if (command.command == "Bus") {
-      auto route_names = ParseRoute(std::move(command.description));
-      catalogue.AddBus(command.id, std::move(route_names));
+      auto route_names = ParseRoute(command.description);
+      catalogue.AddBus(command.id, route_names);
+    }
+  }
+  
+  for (const CommandDescription &command : commands_) {
+    if (command.command == "Stop") {
+      auto first_comma = command.description.find(',');
+      if (first_comma == std::string::npos) continue;
+      
+      auto second_comma = command.description.find(',', first_comma + 1);
+      if (second_comma == std::string::npos) continue;
+      
+      auto distances_str = command.description.substr(second_comma + 1);
+      if (distances_str.empty()) continue;
+      
+      auto distances = ParseDistances(distances_str);
+      auto from_stop = catalogue.FindStop(command.id);
+      
+      for (const auto& [to_stop_name, distance] : distances) {
+        auto to_stop = catalogue.FindStop(to_stop_name);
+        if (from_stop && to_stop) {
+          catalogue.AddStopDistance(from_stop, to_stop, distance);
+        }
+      }
     }
   }
 }

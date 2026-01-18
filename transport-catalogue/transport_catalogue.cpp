@@ -1,4 +1,5 @@
 #include "transport_catalogue.h"
+#include <iostream>
 
 namespace database::transport_catalogue {
 
@@ -27,6 +28,13 @@ void TransportCatalogue::AddStop(const std::string &name, Coordinates coords) {
   stops_.emplace(stored_stop.name, &stored_stop);
 }
 
+void TransportCatalogue::AddStopDistance(const Stop *from, const Stop *to,
+                                         int distance) {
+  distance_between_stops_.insert({std::make_pair<const Stop *, const Stop *>(
+                                      std::move(from), std::move(to)),
+                                  distance});
+}
+
 std::optional<BusInfoResult>
 TransportCatalogue::BusInfo(std::string_view name) const {
   const Bus *bus = FindBus(name);
@@ -38,25 +46,15 @@ TransportCatalogue::BusInfo(std::string_view name) const {
   auto num_stops = bus->route.size();
   auto num_unique_stops = FindUniqueStops(bus);
 
-  auto route_length = 0.0;
-  Coordinates first;
-  Coordinates second;
-  auto is_first = true;
+  double geo_length = ComputeGeographicLength(bus);
 
-  for (const Stop *stop_ptr : bus->route) {
-    if (is_first) {
-      first = stop_ptr->coords;
-      is_first = false;
-    }
+  double road_length = ComputeRoadLength(bus);
 
-    second = stop_ptr->coords;
-    route_length += ComputeDistance(first, second);
-    first = second;
-  }
-  return std::make_optional<BusInfoResult>(
-      {num_stops, num_unique_stops, route_length});
+  double curvature = geo_length > 0 ? road_length / geo_length : 0.0;
+
+  return std::make_optional<BusInfoResult>(num_stops, num_unique_stops,
+                                           road_length, curvature);
 }
-
 std::optional<BusesByStop>
 TransportCatalogue::StopInfo(std::string_view name) const {
   const Stop *stop = FindStop(name);
@@ -88,6 +86,17 @@ const Stop *TransportCatalogue::FindStop(std::string_view name) const {
     return it->second;
   }
   return nullptr;
+}
+
+int TransportCatalogue::GetDistance(const Stop *from, const Stop *to) const {
+  auto pair_ptr = distance_between_stops_.find({from, to});
+
+  if (pair_ptr == distance_between_stops_.end()) {
+    auto pair_ptr = distance_between_stops_.find({from, to});
+    return pair_ptr->second;
+  }
+
+  return pair_ptr->second;
 }
 
 } // namespace database::transport_catalogue

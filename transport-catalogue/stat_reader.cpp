@@ -17,11 +17,11 @@ void PrintBusInfo(const TransportCatalogue &transport_catalogue,
   }
   auto bus = *info;
 
-  output
-      << std::format(
-             "Bus {}: {} stops on route, {} unique stops, {:.6g} route length",
-             name, bus.stops_on_route, bus.unique_stops, bus.route_length)
-      << "\n";
+  output << std::format("Bus {}: {} stops on route, {} unique stops, {:.6g} "
+                        "route length, {:.6g} curvature",
+                        name, bus.stops_on_route, bus.unique_stops,
+                        bus.route_length, bus.curvature)
+         << "\n";
 }
 
 void PrintStopInfo(const TransportCatalogue &transport_catalogue,
