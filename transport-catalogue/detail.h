@@ -21,15 +21,15 @@ struct StringViewEqual {
 };
 
 struct PairPtrHash {
-    using is_transparent = void;
+  using is_transparent = void;
 
-    template <typename T>
-    size_t operator()(std::pair<const T*, const T*> ptrs_pair) const noexcept {
-        auto h1 = std::hash<const void*>{}((ptrs_pair.first));
-        auto h2 = std::hash<const void*>{}((ptrs_pair.second));
-        
-        return h1 ^ (h2 + 0x9e3779b97f4a7c15ull + (h1 << 6) + (h1 >> 2));
-    }
+  template <typename T>
+  size_t operator()(std::pair<const T *, const T *> ptrs_pair) const noexcept {
+    auto h1 = std::hash<const void *>{}((ptrs_pair.first));
+    auto h2 = std::hash<const void *>{}((ptrs_pair.second));
+
+    return h1 ^ (h2 + 0x9e3779b97f4a7c15ull + (h1 << 6) + (h1 >> 2));
+  }
 };
 
 } // namespace database::detail

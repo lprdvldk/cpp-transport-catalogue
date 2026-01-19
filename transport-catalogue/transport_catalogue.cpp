@@ -27,8 +27,16 @@ void TransportCatalogue::AddStop(const std::string &name, Coordinates coords) {
   stops_.emplace(stored_stop.name, &stored_stop);
 }
 
-void TransportCatalogue::AddStopDistance(const Stop *from, const Stop *to,
+void TransportCatalogue::SetStopDistance(const Stop *from, const Stop *to,
                                          int distance) {
+  if (from == nullptr) {
+    return;
+  }
+
+  if (to == nullptr) {
+    return;
+  }
+
   distance_between_stops_.insert({std::make_pair<const Stop *, const Stop *>(
                                       std::move(from), std::move(to)),
                                   distance});
@@ -87,11 +95,17 @@ const Stop *TransportCatalogue::FindStop(std::string_view name) const {
   return nullptr;
 }
 
-int TransportCatalogue::GetDistance(const Stop *from, const Stop *to) const {
+int64_t TransportCatalogue::GetDistance(const Stop *from,
+                                        const Stop *to) const {
   auto pair_ptr = distance_between_stops_.find(std::make_pair(from, to));
 
   if (pair_ptr == distance_between_stops_.end()) {
     auto pair_ptr = distance_between_stops_.find(std::make_pair(to, from));
+
+    if (pair_ptr == distance_between_stops_.end()) {
+      return 0;
+    }
+
     return pair_ptr->second;
   }
 

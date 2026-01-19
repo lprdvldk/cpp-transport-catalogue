@@ -13,7 +13,6 @@
 #include <unordered_set>
 #include <vector>
 
-
 namespace database::transport_catalogue {
 
 using namespace database::geo;
@@ -50,7 +49,7 @@ public:
 
   void AddStop(const std::string &name, Coordinates coords);
 
-  void AddStopDistance(const Stop *from, const Stop *to, int distance);
+  void SetStopDistance(const Stop *from, const Stop *to, int distance);
 
   const Bus *FindBus(std::string_view name) const;
 
@@ -60,7 +59,7 @@ public:
 
   std::optional<BusesByStop> StopInfo(std::string_view name) const;
 
-  int GetDistance(const Stop *from, const Stop *to) const;
+  int64_t GetDistance(const Stop *from, const Stop *to) const;
 
 private:
   std::unordered_map<std::string_view, const Stop *, StringViewHash,
@@ -70,8 +69,7 @@ private:
                      StringViewEqual>
       buses_{};
   std::unordered_map<const Stop *, BusesByStop> buses_by_stops_{};
-  std::unordered_map<StopsPair, uint32_t, PairPtrHash>
-      distance_between_stops_{};
+  std::unordered_map<StopsPair, int64_t, PairPtrHash> distance_between_stops_{};
 
   std::deque<Bus> buses_deque_{};
   std::deque<Stop> stops_deque_{};
@@ -134,8 +132,8 @@ private:
     }
 
     bool is_first = true;
-    const Stop* first;
-    const Stop* second;
+    const Stop *first;
+    const Stop *second;
 
     for (const Stop *stop_ptr : bus->route) {
       if (is_first) {
