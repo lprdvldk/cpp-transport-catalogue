@@ -49,7 +49,7 @@ public:
 
   void AddStop(const std::string &name, Coordinates coords);
 
-  void SetStopDistance(const Stop *from, const Stop *to, int distance);
+  void SetStopDistance(const Stop *from, const Stop *to, int64_t distance);
 
   const Bus *FindBus(std::string_view name) const;
 

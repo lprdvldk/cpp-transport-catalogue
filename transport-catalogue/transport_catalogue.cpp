@@ -28,7 +28,7 @@ void TransportCatalogue::AddStop(const std::string &name, Coordinates coords) {
 }
 
 void TransportCatalogue::SetStopDistance(const Stop *from, const Stop *to,
-                                         int distance) {
+                                         int64_t distance) {
   if (from == nullptr) {
     return;
   }
