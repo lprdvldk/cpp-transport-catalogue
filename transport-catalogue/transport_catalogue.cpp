@@ -1,6 +1,7 @@
 #include "transport_catalogue.h"
 
-namespace database::transport_catalogue {
+namespace database {
+namespace transport_catalogue {
 
 void TransportCatalogue::AddBus(
     const std::string &name, const std::vector<std::string_view> &route_names) {
@@ -112,4 +113,5 @@ int64_t TransportCatalogue::GetDistance(const Stop *from,
   return pair_ptr->second;
 }
 
-} // namespace database::transport_catalogue
+} // namespace transport_catalogue
+} // namespace database

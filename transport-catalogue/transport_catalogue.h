@@ -13,7 +13,8 @@
 #include <unordered_set>
 #include <vector>
 
-namespace database::transport_catalogue {
+namespace database {
+namespace transport_catalogue {
 
 using namespace database::geo;
 using namespace database::detail;
@@ -151,4 +152,5 @@ private:
   }
 };
 
-} // namespace database::transport_catalogue
+} // namespace transport_catalogue
+} // namespace database

@@ -2,7 +2,8 @@
 
 #include <string_view>
 
-namespace database::detail {
+namespace database {
+namespace detail {
 
 struct StringViewHash {
   using is_transparent = void;
@@ -32,4 +33,5 @@ struct PairPtrHash {
   }
 };
 
-} // namespace database::detail
+} // namespace detail
+} // namespace database
