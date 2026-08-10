@@ -1,8 +1,9 @@
 #pragma once
 
-#include "detail.h"
+#include "domain.h"
 #include "geo.h"
 #include <algorithm>
+#include <cstdint>
 #include <deque>
 #include <format>
 #include <functional>

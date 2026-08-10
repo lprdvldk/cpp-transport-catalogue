@@ -1,13 +1,37 @@
 #pragma once
 
-/*
- * В этом файле вы можете разместить классы/структуры, которые являются частью предметной области (domain)
- * вашего приложения и не зависят от транспортного справочника. Например Автобусные маршруты и Остановки. 
- *
- * Их можно было бы разместить и в transport_catalogue.h, однако вынесение их в отдельный
- * заголовочный файл может оказаться полезным, когда дело дойдёт до визуализации карты маршрутов:
- * визуализатор карты (map_renderer) можно будет сделать независящим от транспортного справочника.
- *
- * Если структура вашего приложения не позволяет так сделать, просто оставьте этот файл пустым.
- *
- */
+#include <string_view>
+
+namespace database {
+namespace detail {
+
+struct StringViewHash {
+  using is_transparent = void;
+
+  size_t operator()(std::string_view sv) const noexcept {
+    return std::hash<std::string_view>{}(sv);
+  }
+};
+
+struct StringViewEqual {
+  using is_transparent = void;
+
+  bool operator()(std::string_view lhs, std::string_view rhs) const noexcept {
+    return lhs == rhs;
+  }
+};
+
+struct PairPtrHash {
+  using is_transparent = void;
+
+  template <typename T>
+  size_t operator()(std::pair<const T *, const T *> ptrs_pair) const noexcept {
+    auto h1 = std::hash<const void *>{}((ptrs_pair.first));
+    auto h2 = std::hash<const void *>{}((ptrs_pair.second));
+
+    return h1 ^ (h2 + 0x9e3779b97f4a7c15ull + (h1 << 6) + (h1 >> 2));
+  }
+};
+
+} // namespace detail
+} // namespace database
