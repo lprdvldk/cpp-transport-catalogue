@@ -1,0 +1,27 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug transport_catalogue",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/transport-catalogue/transport_catalogue",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stdio": [
+                "${input:stdinFile}",
+                null,
+                null
+            ],
+            "preLaunchTask": "g++ build (debug)"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "stdinFile",
+            "type": "promptString",
+            "description": "Path to the JSON file to feed as stdin",
+            "default": "${workspaceFolder}/tests/example1_input.json"
+        }
+    ]
+}
