@@ -117,6 +117,7 @@ private:
       if (is_first) {
         first = stop_ptr->coords;
         is_first = false;
+        continue;
       }
 
       second = stop_ptr->coords;
