@@ -28,6 +28,7 @@ struct Stop {
 struct Bus {
   std::string name;
   std::vector<const Stop *> route;
+  bool is_roundtrip = false;
 };
 
 struct BusInfoResult {
@@ -47,7 +48,8 @@ public:
   ~TransportCatalogue() = default;
 
   void AddBus(const std::string &name,
-              const std::vector<std::string_view> &route_names);
+              const std::vector<std::string_view> &route_names,
+              bool is_roundtrip);
 
   void AddStop(const std::string &name, Coordinates coords);
 
@@ -62,6 +64,17 @@ public:
   std::optional<BusesByStop> StopInfo(std::string_view name) const;
 
   int64_t GetDistance(const Stop *from, const Stop *to) const;
+
+  std::vector<const Bus *> GetAllBuses() const {
+    std::vector<const Bus *> result;
+    result.reserve(buses_deque_.size());
+    for (const Bus &bus : buses_deque_) {
+      result.push_back(&bus);
+    }
+    std::sort(result.begin(), result.end(),
+              [](const Bus *a, const Bus *b) { return a->name < b->name; });
+    return result;
+  }
 
 private:
   std::unordered_map<std::string_view, const Stop *, StringViewHash,

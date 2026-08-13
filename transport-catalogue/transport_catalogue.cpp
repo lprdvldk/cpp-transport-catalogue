@@ -4,14 +4,15 @@ namespace database {
 namespace transport_catalogue {
 
 void TransportCatalogue::AddBus(
-    const std::string &name, const std::vector<std::string_view> &route_names) {
+    const std::string &name, const std::vector<std::string_view> &route_names,
+    bool is_roundtrip) {
   if (buses_.find(name) != buses_.end()) {
     return;
   }
 
   std::vector<const Stop *> tmp;
   for (const std::string_view &stop_name : route_names) {
-    const Stop *stop = FindStop(stop_name);
+    const Stop* stop = FindStop(stop_name);
     if (stop) {
       tmp.push_back(stop);
     }
@@ -20,7 +21,7 @@ void TransportCatalogue::AddBus(
     return;
   }
 
-  Bus bus{name, std::move(tmp)};
+  Bus bus{name, std::move(tmp), is_roundtrip};
   buses_deque_.push_back(std::move(bus));
   const Bus &stored_bus = buses_deque_.back();
   buses_.emplace(stored_bus.name, &stored_bus);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "json.h"
+#include "map_renderer.h"
 #include "transport_catalogue.h"
 #include "request_handler.h"
 #include <string>
@@ -11,6 +12,12 @@ public:
                const RequestHandler& handler);
 
     json::Node ProcessRequests(const json::Node& document);
+
+    void LoadBaseRequests(const json::Node& document);
+
+    renderer::RenderSettings ParseRenderSettingsFromDocument(const json::Node& document);
+    renderer::RenderSettings ParseRenderSettings(const json::Node& node);
+    static svg::Color ParseColor(const json::Node& node);
 
 private:
     database::transport_catalogue::TransportCatalogue& catalogue_;
