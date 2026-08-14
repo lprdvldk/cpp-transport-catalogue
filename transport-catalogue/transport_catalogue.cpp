@@ -61,14 +61,13 @@ TransportCatalogue::BusInfo(std::string_view name) const {
                                            road_length, curvature);
 }
 
-std::optional<BusesByStop>
+std::optional<std::reference_wrapper<const BusesByStop>>
 TransportCatalogue::StopInfo(std::string_view name) const {
   const Stop *stop = FindStop(name);
   if (!stop) {
     return std::nullopt;
   }
-  auto busses = FindBusesByStop(stop);
-  return std::make_optional<BusesByStop>(std::move(busses));
+  return std::cref(FindBusesByStop(stop));
 }
 
 const Bus *TransportCatalogue::FindBus(std::string_view name) const {

@@ -1,62 +1,68 @@
 #pragma once
 
+#include <iostream>
 #include <map>
 #include <string>
-#include <vector>
 #include <variant>
-#include <iostream>
+#include <vector>
 
 namespace json {
 
-class Node {
+class Node;
+
+using Array = std::vector<Node>;
+using Object = std::map<std::string, Node>;
+
+class Node : private std::variant<std::nullptr_t, bool, int, double, std::string, Array, Object> {
 public:
-    using Object = std::map<std::string, Node>;
-    using Array = std::vector<Node>;
+    using Value = variant;
+    using variant::variant;
 
-    Node() : type_(Type::Null) {}
-    Node(std::nullptr_t) : type_(Type::Null) {}
-    Node(bool value) : type_(Type::Bool), bool_value_(value) {}
-    Node(int value) : type_(Type::Int), int_value_(value) {}
-    Node(double value) : type_(Type::Double), double_value_(value) {}
-    Node(const std::string& value) : type_(Type::String), string_value_(value) {}
-    Node(const char* value) : type_(Type::String), string_value_(value) {}
-    Node(const Array& value) : type_(Type::Array), array_value_(value) {}
-    Node(const Object& value) : type_(Type::Object), object_value_(value) {}
+    Node(const char* value) : variant(std::string(value)) {}
 
-    bool IsNull() const { return type_ == Type::Null; }
-    bool IsBool() const { return type_ == Type::Bool; }
-    bool IsInt() const { return type_ == Type::Int; }
-    bool IsDouble() const { return type_ == Type::Double; }
-    bool IsString() const { return type_ == Type::String; }
-    bool IsArray() const { return type_ == Type::Array; }
-    bool IsObject() const { return type_ == Type::Object; }
+    using Object = json::Object;
+    using Array = json::Array;
 
-    bool AsBool() const { return bool_value_; }
-    int AsInt() const { return int_value_; }
-    double AsDouble() const { return double_value_; }
-    const std::string& AsString() const { return string_value_; }
-    const Array& AsArray() const { return array_value_; }
-    const Object& AsObject() const { return object_value_; }
+    bool IsNull() const { return std::holds_alternative<std::nullptr_t>(GetValue()); }
+    bool IsBool() const { return std::holds_alternative<bool>(GetValue()); }
+    bool IsInt() const { return std::holds_alternative<int>(GetValue()); }
+    bool IsDouble() const { return std::holds_alternative<double>(GetValue()); }
+    bool IsString() const { return std::holds_alternative<std::string>(GetValue()); }
+    bool IsArray() const { return std::holds_alternative<Array>(GetValue()); }
+    bool IsObject() const { return std::holds_alternative<Object>(GetValue()); }
+
+    bool AsBool() const { return GetOr<bool>(false); }
+    int AsInt() const { return GetOr<int>(0); }
+    double AsDouble() const { return GetOr<double>(0.0); }
+    const std::string& AsString() const { return GetOrRef<std::string>(); }
+    const Array& AsArray() const { return GetOrRef<Array>(); }
+    const Object& AsObject() const { return GetOrRef<Object>(); }
 
     double AsNumber() const {
-        if (type_ == Type::Int) {
-            return int_value_;
+        if (IsInt()) {
+            return AsInt();
         }
-        if (type_ == Type::Double) {
-            return double_value_;
+        if (IsDouble()) {
+            return AsDouble();
         }
         return 0.0;
     }
 
+    const Value& GetValue() const { return *this; }
+
 private:
-    enum class Type { Null, Bool, Int, Double, String, Array, Object };
-    Type type_;
-    bool bool_value_ = false;
-    int int_value_ = 0;
-    double double_value_ = 0.0;
-    std::string string_value_;
-    Array array_value_;
-    Object object_value_;
+    template <typename T>
+    T GetOr(T default_value) const {
+        const T* value = std::get_if<T>(&GetValue());
+        return value ? *value : default_value;
+    }
+
+    template <typename T>
+    const T& GetOrRef() const {
+        static const T empty{};
+        const T* value = std::get_if<T>(&GetValue());
+        return value ? *value : empty;
+    }
 };
 
 using Document = Node;

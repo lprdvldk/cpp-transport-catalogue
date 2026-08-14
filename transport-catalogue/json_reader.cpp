@@ -1,5 +1,7 @@
 #include "json_reader.h"
 
+#include <algorithm>
+
 JsonReader::JsonReader(database::transport_catalogue::TransportCatalogue& catalogue)
     : catalogue_(catalogue) {}
 
@@ -208,12 +210,13 @@ std::string JsonReader::GetStringField(const json::Node::Object& obj, const std:
     return (it != obj.end() && it->second.IsString()) ? it->second.AsString() : std::string();
 }
 
-json::Node::Object JsonReader::BuildBusResponse(int id, const std::optional<BusStat>& stat) {
+json::Node::Object JsonReader::BuildBusResponse(int id,
+    const std::optional<database::BusInfoResult>& stat) {
     json::Node::Object result;
     result["request_id"] = json::Node(id);
     if (stat) {
-        result["stop_count"] = json::Node(static_cast<int>(stat->stop_count));
-        result["unique_stop_count"] = json::Node(static_cast<int>(stat->unique_stop_count));
+        result["stop_count"] = json::Node(static_cast<int>(stat->stops_on_route));
+        result["unique_stop_count"] = json::Node(static_cast<int>(stat->unique_stops));
         result["route_length"] = json::Node(static_cast<int>(stat->route_length));
         result["curvature"] = json::Node(stat->curvature);
     } else {
@@ -222,13 +225,20 @@ json::Node::Object JsonReader::BuildBusResponse(int id, const std::optional<BusS
     return result;
 }
 
-json::Node::Object JsonReader::BuildStopResponse(int id, const std::optional<StopStat>& stat) {
+json::Node::Object JsonReader::BuildStopResponse(int id,
+    const std::optional<std::reference_wrapper<const database::BusesByStop>>& stat) {
     json::Node::Object result;
     result["request_id"] = json::Node(id);
     if (stat) {
+        std::vector<std::string_view> bus_names;
+        for (const database::Bus* bus : stat->get()) {
+            bus_names.push_back(bus->name);
+        }
+        std::sort(bus_names.begin(), bus_names.end());
+
         json::Node::Array buses_array;
-        for (const std::string& bus_name : stat->buses) {
-            buses_array.push_back(json::Node(bus_name));
+        for (std::string_view bus_name : bus_names) {
+            buses_array.push_back(json::Node(std::string(bus_name)));
         }
         result["buses"] = json::Node(buses_array);
     } else {

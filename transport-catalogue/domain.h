@@ -1,6 +1,12 @@
 #pragma once
 
+#include "geo.h"
+
+#include <string>
 #include <string_view>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 
 namespace database {
 namespace detail {
@@ -34,4 +40,26 @@ struct PairPtrHash {
 };
 
 } // namespace detail
+
+struct Stop {
+  std::string name;
+  geo::Coordinates coords;
+};
+
+struct Bus {
+  std::string name;
+  std::vector<const Stop *> route;
+  bool is_roundtrip = false;
+};
+
+struct BusInfoResult {
+  size_t stops_on_route;
+  size_t unique_stops;
+  double route_length;
+  double curvature;
+};
+
+using BusesByStop = std::unordered_set<const Bus *>;
+using StopsPair = std::pair<const Stop *, const Stop *>;
+
 } // namespace database

@@ -20,26 +20,11 @@ namespace transport_catalogue {
 using namespace database::geo;
 using namespace database::detail;
 
-struct Stop {
-  std::string name;
-  Coordinates coords;
-};
-
-struct Bus {
-  std::string name;
-  std::vector<const Stop *> route;
-  bool is_roundtrip = false;
-};
-
-struct BusInfoResult {
-  size_t stops_on_route;
-  size_t unique_stops;
-  double route_length;
-  double curvature;
-};
-
-using BusesByStop = std::unordered_set<const Bus *>;
-using StopsPair = std::pair<const Stop *, const Stop *>;
+using database::Bus;
+using database::BusesByStop;
+using database::BusInfoResult;
+using database::Stop;
+using database::StopsPair;
 
 class TransportCatalogue {
 public:
@@ -61,20 +46,12 @@ public:
 
   std::optional<BusInfoResult> BusInfo(std::string_view name) const;
 
-  std::optional<BusesByStop> StopInfo(std::string_view name) const;
+  std::optional<std::reference_wrapper<const BusesByStop>> StopInfo(
+      std::string_view name) const;
 
   int64_t GetDistance(const Stop *from, const Stop *to) const;
 
-  std::vector<const Bus *> GetAllBuses() const {
-    std::vector<const Bus *> result;
-    result.reserve(buses_deque_.size());
-    for (const Bus &bus : buses_deque_) {
-      result.push_back(&bus);
-    }
-    std::sort(result.begin(), result.end(),
-              [](const Bus *a, const Bus *b) { return a->name < b->name; });
-    return result;
-  }
+  const std::deque<Bus> &GetAllBuses() const { return buses_deque_; }
 
 private:
   std::unordered_map<std::string_view, const Stop *, StringViewHash,
@@ -108,12 +85,10 @@ private:
     }
   }
 
-  BusesByStop FindBusesByStop(const Stop *stop) const {
+  const BusesByStop &FindBusesByStop(const Stop *stop) const {
+    static const BusesByStop empty_buses;
     auto ptr = buses_by_stops_.find(stop);
-    if (ptr != buses_by_stops_.end()) {
-      return ptr->second;
-    }
-    return {};
+    return ptr != buses_by_stops_.end() ? ptr->second : empty_buses;
   }
 
   double ComputeGeographicLength(const Bus *bus) const {

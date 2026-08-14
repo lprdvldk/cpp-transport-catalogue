@@ -1,10 +1,12 @@
 #pragma once
 
+#include "domain.h"
 #include "json.h"
 #include "map_renderer.h"
 #include "request_handler.h"
 #include "transport_catalogue.h"
 
+#include <functional>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -33,8 +35,10 @@ private:
 
     json::Node::Array BuildStatResponses(const json::Node::Array& stat_requests,
                                          const RequestHandler& handler) const;
-    static json::Node::Object BuildBusResponse(int id, const std::optional<BusStat>& stat);
-    static json::Node::Object BuildStopResponse(int id, const std::optional<StopStat>& stat);
+    static json::Node::Object BuildBusResponse(int id,
+        const std::optional<database::BusInfoResult>& stat);
+    static json::Node::Object BuildStopResponse(int id,
+        const std::optional<std::reference_wrapper<const database::BusesByStop>>& stat);
     static json::Node::Object BuildMapResponse(int id, const std::string& map_svg);
     static std::string GetStringField(const json::Node::Object& obj, const std::string& key);
 
