@@ -174,7 +174,6 @@ svg::Document MapRenderer::RenderRouteMap(
   const auto bus_colors = AssignBusColors(sorted_buses);
   const auto unique_stops = CollectUniqueStops(sorted_buses);
 
-  // Order matters: route lines, bus labels, stop circles, stop labels.
   RenderRouteLines(doc, projector, sorted_buses, bus_colors);
   RenderBusLabels(doc, projector, sorted_buses, bus_colors);
   RenderStopCircles(doc, projector, unique_stops);

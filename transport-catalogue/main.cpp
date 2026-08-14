@@ -13,19 +13,17 @@ int main() {
 
   std::string input((std::istreambuf_iterator<char>(std::cin)),
                     std::istreambuf_iterator<char>());
-
   json::Document doc = json::Parse(input);
 
   database::transport_catalogue::TransportCatalogue catalogue;
-  RequestHandler handler(catalogue);
-  JsonReader reader(catalogue, handler);
-
+  JsonReader reader(catalogue);
   reader.LoadBaseRequests(doc);
-  renderer::RenderSettings settings = reader.ParseRenderSettingsFromDocument(doc);
 
+  renderer::RenderSettings settings = JsonReader::ParseRenderSettings(doc);
   renderer::MapRenderer map_renderer(settings);
-  svg::Document map = map_renderer.RenderRouteMap(catalogue.GetAllBuses());
-  map.Render(std::cout);
+  RequestHandler handler(catalogue, map_renderer);
+
+  json::Print(reader.ProcessStatRequests(doc, handler), std::cout);
 
   return 0;
 }

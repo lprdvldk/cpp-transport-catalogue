@@ -1,6 +1,8 @@
 #pragma once
 
+#include "map_renderer.h"
 #include "transport_catalogue.h"
+
 #include <optional>
 #include <set>
 #include <string>
@@ -19,11 +21,15 @@ struct StopStat {
 
 class RequestHandler {
 public:
-    explicit RequestHandler(const database::transport_catalogue::TransportCatalogue& db);
+    RequestHandler(const database::transport_catalogue::TransportCatalogue& db,
+                   const renderer::MapRenderer& renderer);
 
     std::optional<BusStat> GetBusStat(std::string_view bus_name) const;
     std::optional<StopStat> GetStopStat(std::string_view stop_name) const;
 
+    std::string RenderMap() const;
+
 private:
     const database::transport_catalogue::TransportCatalogue& db_;
+    const renderer::MapRenderer& renderer_;
 };

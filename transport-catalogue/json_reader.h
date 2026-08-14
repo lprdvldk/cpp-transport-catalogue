@@ -2,27 +2,45 @@
 
 #include "json.h"
 #include "map_renderer.h"
-#include "transport_catalogue.h"
 #include "request_handler.h"
+#include "transport_catalogue.h"
+
+#include <optional>
 #include <string>
+#include <string_view>
+#include <vector>
 
 class JsonReader {
 public:
-    JsonReader(database::transport_catalogue::TransportCatalogue& catalogue,
-               const RequestHandler& handler);
-
-    json::Node ProcessRequests(const json::Node& document);
+    explicit JsonReader(database::transport_catalogue::TransportCatalogue& catalogue);
 
     void LoadBaseRequests(const json::Node& document);
 
-    renderer::RenderSettings ParseRenderSettingsFromDocument(const json::Node& document);
-    renderer::RenderSettings ParseRenderSettings(const json::Node& node);
-    static svg::Color ParseColor(const json::Node& node);
+    static renderer::RenderSettings ParseRenderSettings(const json::Node& document);
+
+    json::Node ProcessStatRequests(const json::Node& document, const RequestHandler& handler) const;
 
 private:
     database::transport_catalogue::TransportCatalogue& catalogue_;
-    const RequestHandler& handler_;
 
     void ProcessBaseRequests(const json::Node::Array& base_requests);
-    json::Node::Array ProcessStatRequests(const json::Node::Array& stat_requests);
+    void AddStop(const json::Node::Object& stop_request);
+    void AddStopDistances(const json::Node::Object& stop_request);
+    void AddBus(const json::Node::Object& bus_request);
+    static bool IsStopRequest(const json::Node& item);
+    static bool IsBusRequest(const json::Node& item);
+    static void AppendReturnTrip(std::vector<std::string_view>& route_names);
+
+    json::Node::Array BuildStatResponses(const json::Node::Array& stat_requests,
+                                         const RequestHandler& handler) const;
+    static json::Node::Object BuildBusResponse(int id, const std::optional<BusStat>& stat);
+    static json::Node::Object BuildStopResponse(int id, const std::optional<StopStat>& stat);
+    static json::Node::Object BuildMapResponse(int id, const std::string& map_svg);
+    static std::string GetStringField(const json::Node::Object& obj, const std::string& key);
+
+    static renderer::RenderSettings ParseRenderSettingsObject(const json::Node& settings_node);
+    static svg::Color ParseColor(const json::Node& node);
+    static double GetNumberField(const json::Node::Object& obj, const std::string& key, double def);
+    static int GetIntField(const json::Node::Object& obj, const std::string& key, int def);
+    static svg::Point GetPointField(const json::Node::Object& obj, const std::string& key);
 };

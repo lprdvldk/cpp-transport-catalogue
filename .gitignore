@@ -32,3 +32,5 @@
 *.app
 
 *.dSYM
+
+build/*

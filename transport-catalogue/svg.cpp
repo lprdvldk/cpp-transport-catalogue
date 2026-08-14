@@ -75,7 +75,6 @@ std::ostream &operator<<(std::ostream &out, StrokeLineJoin join) {
   return out;
 }
 
-
 Circle &Circle::SetCenter(Point center) {
   center_ = center;
   return *this;
@@ -91,7 +90,6 @@ void Circle::RenderObject(const RenderContext &context) const {
   RenderAttrs(out);
   out << "/>"sv;
 }
-
 
 Polyline &Polyline::AddPoint(Point point) {
   points_.push_back(point);
@@ -112,7 +110,6 @@ void Polyline::RenderObject(const RenderContext &context) const {
   RenderAttrs(out);
   out << "/>"sv;
 }
-
 
 namespace {
 std::string EscapeText(const std::string &data) {
@@ -184,7 +181,6 @@ void Text::RenderObject(const RenderContext &context) const {
   }
   out << ">"sv << EscapeText(data_) << "</text>"sv;
 }
-
 
 void Document::AddPtr(std::unique_ptr<Object> &&obj) {
   objects_.push_back(std::move(obj));

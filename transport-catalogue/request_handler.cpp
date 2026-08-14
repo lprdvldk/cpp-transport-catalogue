@@ -1,7 +1,10 @@
 #include "request_handler.h"
 
-RequestHandler::RequestHandler(const database::transport_catalogue::TransportCatalogue& db)
-    : db_(db) {}
+#include <sstream>
+
+RequestHandler::RequestHandler(const database::transport_catalogue::TransportCatalogue& db,
+                               const renderer::MapRenderer& renderer)
+    : db_(db), renderer_(renderer) {}
 
 std::optional<BusStat> RequestHandler::GetBusStat(std::string_view bus_name) const {
     auto info = db_.BusInfo(bus_name);
@@ -26,4 +29,11 @@ std::optional<StopStat> RequestHandler::GetStopStat(std::string_view stop_name) 
         stat.buses.insert(bus->name);
     }
     return stat;
+}
+
+std::string RequestHandler::RenderMap() const {
+    svg::Document map = renderer_.RenderRouteMap(db_.GetAllBuses());
+    std::ostringstream out;
+    map.Render(out);
+    return out.str();
 }
