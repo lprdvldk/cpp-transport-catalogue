@@ -34,3 +34,4 @@
 *.dSYM
 
 build/*
+transport_catalogue
