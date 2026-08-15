@@ -13,7 +13,9 @@ class Node;
 using Array = std::vector<Node>;
 using Object = std::map<std::string, Node>;
 
-class Node : private std::variant<std::nullptr_t, bool, int, double, std::string, Array, Object> {
+using variant_json_fields = std::variant<std::nullptr_t, bool, int, double, std::string, Array, Object>;
+
+class Node : private variant_json_fields {
 public:
     using Value = variant;
     using variant::variant;
