@@ -5,7 +5,7 @@
         {
             "label": "g++ build (debug)",
             "type": "shell",
-            "command": "g++",
+            "command": "clang++",
             "args": [
                 "-std=c++20",
                 "-g",
