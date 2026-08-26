@@ -15,3 +15,7 @@ mkdir build && cd build
 cmake ..
 cmake --build .
 ```
+
+```bash
+find ./transport-catalogue -iname '*.h' -o -iname '*.cpp' | xargs clang-format -i -style=Google 
+```

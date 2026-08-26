@@ -14,6 +14,6 @@ double ComputeDistance(Coordinates from, Coordinates to) {
   cos_angle = std::clamp(cos_angle, -1.0, 1.0);
   return std::acos(cos_angle) * 6371000;
 }
-} // namespace geo
+}  // namespace geo
 
-} // namespace database
+}  // namespace database

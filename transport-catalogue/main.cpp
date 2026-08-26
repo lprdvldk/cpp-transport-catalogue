@@ -1,9 +1,10 @@
+#include <iostream>
+
 #include "json.h"
 #include "json_reader.h"
 #include "map_renderer.h"
 #include "request_handler.h"
 #include "transport_catalogue.h"
-#include <iostream>
 
 int main() {
   std::ios::sync_with_stdio(false);

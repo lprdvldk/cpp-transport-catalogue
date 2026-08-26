@@ -1,12 +1,12 @@
 #pragma once
 
-#include "geo.h"
-
 #include <string>
 #include <string_view>
 #include <unordered_set>
 #include <utility>
 #include <vector>
+
+#include "geo.h"
 
 namespace database {
 namespace detail {
@@ -31,15 +31,15 @@ struct PairPtrHash {
   using is_transparent = void;
 
   template <typename T>
-  size_t operator()(std::pair<const T *, const T *> ptrs_pair) const noexcept {
-    auto h1 = std::hash<const void *>{}((ptrs_pair.first));
-    auto h2 = std::hash<const void *>{}((ptrs_pair.second));
+  size_t operator()(std::pair<const T*, const T*> ptrs_pair) const noexcept {
+    auto h1 = std::hash<const void*>{}((ptrs_pair.first));
+    auto h2 = std::hash<const void*>{}((ptrs_pair.second));
 
     return h1 ^ (h2 + 0x9e3779b97f4a7c15ull + (h1 << 6) + (h1 >> 2));
   }
 };
 
-} // namespace detail
+}  // namespace detail
 
 struct Stop {
   std::string name;
@@ -48,7 +48,7 @@ struct Stop {
 
 struct Bus {
   std::string name;
-  std::vector<const Stop *> route;
+  std::vector<const Stop*> route;
   bool is_roundtrip = false;
 };
 
@@ -59,7 +59,7 @@ struct BusInfoResult {
   double curvature;
 };
 
-using BusesByStop = std::unordered_set<const Bus *>;
-using StopsPair = std::pair<const Stop *, const Stop *>;
+using BusesByStop = std::unordered_set<const Bus*>;
+using StopsPair = std::pair<const Stop*, const Stop*>;
 
-} // namespace database
+}  // namespace database

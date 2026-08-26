@@ -1,7 +1,5 @@
 #pragma once
 
-#include "domain.h"
-#include "geo.h"
 #include <algorithm>
 #include <cstdint>
 #include <deque>
@@ -13,6 +11,9 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
+#include "domain.h"
+#include "geo.h"
 
 namespace database {
 namespace transport_catalogue {
@@ -27,46 +28,46 @@ using database::Stop;
 using database::StopsPair;
 
 class TransportCatalogue {
-public:
+ public:
   explicit TransportCatalogue() = default;
 
   ~TransportCatalogue() = default;
 
-  void AddBus(const std::string &name,
-              const std::vector<std::string_view> &route_names,
+  void AddBus(const std::string& name,
+              const std::vector<std::string_view>& route_names,
               bool is_roundtrip);
 
-  void AddStop(const std::string &name, Coordinates coords);
+  void AddStop(const std::string& name, Coordinates coords);
 
-  void SetStopDistance(const Stop *from, const Stop *to, int64_t distance);
+  void SetStopDistance(const Stop* from, const Stop* to, int64_t distance);
 
-  const Bus *FindBus(std::string_view name) const;
+  const Bus* FindBus(std::string_view name) const;
 
-  const Stop *FindStop(std::string_view name) const;
+  const Stop* FindStop(std::string_view name) const;
 
   std::optional<BusInfoResult> BusInfo(std::string_view name) const;
 
   std::optional<std::reference_wrapper<const BusesByStop>> StopInfo(
       std::string_view name) const;
 
-  int64_t GetDistance(const Stop *from, const Stop *to) const;
+  int64_t GetDistance(const Stop* from, const Stop* to) const;
 
-  const std::deque<Bus> &GetAllBuses() const { return buses_deque_; }
+  const std::deque<Bus>& GetAllBuses() const { return buses_deque_; }
 
-private:
-  std::unordered_map<std::string_view, const Stop *, StringViewHash,
+ private:
+  std::unordered_map<std::string_view, const Stop*, StringViewHash,
                      StringViewEqual>
       stops_{};
-  std::unordered_map<std::string_view, const Bus *, StringViewHash,
+  std::unordered_map<std::string_view, const Bus*, StringViewHash,
                      StringViewEqual>
       buses_{};
-  std::unordered_map<const Stop *, BusesByStop> buses_by_stops_{};
+  std::unordered_map<const Stop*, BusesByStop> buses_by_stops_{};
   std::unordered_map<StopsPair, int64_t, PairPtrHash> distance_between_stops_{};
 
   std::deque<Bus> buses_deque_{};
   std::deque<Stop> stops_deque_{};
 
-  uint64_t FindUniqueStops(const Bus *bus) const {
+  uint64_t FindUniqueStops(const Bus* bus) const {
     std::unordered_set<std::string_view, StringViewHash, StringViewEqual> tmp;
     for (auto stop_ptr : bus->route) {
       tmp.insert(stop_ptr->name);
@@ -74,10 +75,10 @@ private:
     return tmp.size();
   }
 
-  void AddBusToStopIndex(const Bus &bus) {
-    for (const Stop *stop : bus.route) {
+  void AddBusToStopIndex(const Bus& bus) {
+    for (const Stop* stop : bus.route) {
       if (buses_by_stops_.find(stop) != buses_by_stops_.end()) {
-        auto &buses = buses_by_stops_.at(stop);
+        auto& buses = buses_by_stops_.at(stop);
         buses.insert(&bus);
       } else {
         buses_by_stops_.insert({stop, {&bus}});
@@ -85,13 +86,13 @@ private:
     }
   }
 
-  const BusesByStop &FindBusesByStop(const Stop *stop) const {
+  const BusesByStop& FindBusesByStop(const Stop* stop) const {
     static const BusesByStop empty_buses;
     auto ptr = buses_by_stops_.find(stop);
     return ptr != buses_by_stops_.end() ? ptr->second : empty_buses;
   }
 
-  double ComputeGeographicLength(const Bus *bus) const {
+  double ComputeGeographicLength(const Bus* bus) const {
     double geo_length = 0.0;
     if (bus->route.empty()) {
       return 0.0;
@@ -101,7 +102,7 @@ private:
     Coordinates first;
     Coordinates second;
 
-    for (const Stop *stop_ptr : bus->route) {
+    for (const Stop* stop_ptr : bus->route) {
       if (is_first) {
         first = stop_ptr->coords;
         is_first = false;
@@ -116,17 +117,17 @@ private:
     return geo_length;
   }
 
-  double ComputeRoadLength(const Bus *bus) const {
+  double ComputeRoadLength(const Bus* bus) const {
     double road_length = 0.0;
     if (bus->route.empty()) {
       return 0.0;
     }
 
     bool is_first = true;
-    const Stop *first;
-    const Stop *second;
+    const Stop* first;
+    const Stop* second;
 
-    for (const Stop *stop_ptr : bus->route) {
+    for (const Stop* stop_ptr : bus->route) {
       if (is_first) {
         first = stop_ptr;
         is_first = false;
@@ -142,5 +143,5 @@ private:
   }
 };
 
-} // namespace transport_catalogue
-} // namespace database
+}  // namespace transport_catalogue
+}  // namespace database

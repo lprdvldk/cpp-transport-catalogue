@@ -4,35 +4,36 @@ namespace renderer {
 
 using namespace database::transport_catalogue;
 
-std::unordered_map<const Bus *, svg::Color> MapRenderer::AssignBusColors(
-    const std::vector<const Bus *> &sorted_buses) const {
-  std::unordered_map<const Bus *, svg::Color> result;
+std::unordered_map<const Bus*, svg::Color> MapRenderer::AssignBusColors(
+    const std::vector<const Bus*>& sorted_buses) const {
+  std::unordered_map<const Bus*, svg::Color> result;
   if (settings_.color_palette.empty()) {
     return result;
   }
 
   size_t color_index = 0;
-  for (const Bus *bus : sorted_buses) {
+  for (const Bus* bus : sorted_buses) {
     if (bus->route.empty()) {
       continue;
     }
-    result[bus] = settings_.color_palette[color_index % settings_.color_palette.size()];
+    result[bus] =
+        settings_.color_palette[color_index % settings_.color_palette.size()];
     ++color_index;
   }
   return result;
 }
 
-std::vector<const Stop *> MapRenderer::GetBusEndpoints(const Bus *bus) const {
-  std::vector<const Stop *> endpoints;
+std::vector<const Stop*> MapRenderer::GetBusEndpoints(const Bus* bus) const {
+  std::vector<const Stop*> endpoints;
   if (bus->route.empty()) {
     return endpoints;
   }
 
-  const Stop *first = bus->route.front();
+  const Stop* first = bus->route.front();
   endpoints.push_back(first);
 
   if (!bus->is_roundtrip) {
-    const Stop *last = bus->route[bus->route.size() / 2];
+    const Stop* last = bus->route[bus->route.size() / 2];
     if (last != first) {
       endpoints.push_back(last);
     }
@@ -41,14 +42,14 @@ std::vector<const Stop *> MapRenderer::GetBusEndpoints(const Bus *bus) const {
   return endpoints;
 }
 
-std::map<std::string_view, const Stop *> MapRenderer::CollectUniqueStops(
-    const std::vector<const Bus *> &sorted_buses) const {
-  std::map<std::string_view, const Stop *> unique_stops;
-  for (const Bus *bus : sorted_buses) {
+std::map<std::string_view, const Stop*> MapRenderer::CollectUniqueStops(
+    const std::vector<const Bus*>& sorted_buses) const {
+  std::map<std::string_view, const Stop*> unique_stops;
+  for (const Bus* bus : sorted_buses) {
     if (bus->route.empty()) {
       continue;
     }
-    for (const Stop *stop : bus->route) {
+    for (const Stop* stop : bus->route) {
       unique_stops[stop->name] = stop;
     }
   }
@@ -56,15 +57,15 @@ std::map<std::string_view, const Stop *> MapRenderer::CollectUniqueStops(
 }
 
 void MapRenderer::RenderRouteLines(
-    svg::Document &doc, const SphereProjector &projector,
-    const std::vector<const Bus *> &sorted_buses,
-    const std::unordered_map<const Bus *, svg::Color> &bus_colors) const {
-  for (const Bus *bus : sorted_buses) {
+    svg::Document& doc, const SphereProjector& projector,
+    const std::vector<const Bus*>& sorted_buses,
+    const std::unordered_map<const Bus*, svg::Color>& bus_colors) const {
+  for (const Bus* bus : sorted_buses) {
     if (bus->route.empty()) {
       continue;
     }
 
-    const svg::Color &color = bus_colors.at(bus);
+    const svg::Color& color = bus_colors.at(bus);
 
     svg::Polyline polyline;
     polyline.SetFillColor(svg::NoneColor)
@@ -73,7 +74,7 @@ void MapRenderer::RenderRouteLines(
         .SetStrokeLineCap(svg::StrokeLineCap::ROUND)
         .SetStrokeLineJoin(svg::StrokeLineJoin::ROUND);
 
-    for (const Stop *stop : bus->route) {
+    for (const Stop* stop : bus->route) {
       polyline.AddPoint(projector(stop->coords));
     }
 
@@ -81,8 +82,9 @@ void MapRenderer::RenderRouteLines(
   }
 }
 
-void MapRenderer::AddLabelPair(svg::Document &doc, svg::Point position, const std::string &text,
-                               svg::Point offset, int font_size, const svg::Color &label_fill,
+void MapRenderer::AddLabelPair(svg::Document& doc, svg::Point position,
+                               const std::string& text, svg::Point offset,
+                               int font_size, const svg::Color& label_fill,
                                bool bold) const {
   svg::Text substrate;
   substrate.SetPosition(position)
@@ -114,27 +116,28 @@ void MapRenderer::AddLabelPair(svg::Document &doc, svg::Point position, const st
 }
 
 void MapRenderer::RenderBusLabels(
-    svg::Document &doc, const SphereProjector &projector,
-    const std::vector<const Bus *> &sorted_buses,
-    const std::unordered_map<const Bus *, svg::Color> &bus_colors) const {
-  for (const Bus *bus : sorted_buses) {
+    svg::Document& doc, const SphereProjector& projector,
+    const std::vector<const Bus*>& sorted_buses,
+    const std::unordered_map<const Bus*, svg::Color>& bus_colors) const {
+  for (const Bus* bus : sorted_buses) {
     if (bus->route.empty()) {
       continue;
     }
 
-    const svg::Color &color = bus_colors.at(bus);
-    for (const Stop *stop : GetBusEndpoints(bus)) {
-      AddLabelPair(doc, projector(stop->coords), bus->name, settings_.bus_label_offset,
-                   settings_.bus_label_font_size, color, true);
+    const svg::Color& color = bus_colors.at(bus);
+    for (const Stop* stop : GetBusEndpoints(bus)) {
+      AddLabelPair(doc, projector(stop->coords), bus->name,
+                   settings_.bus_label_offset, settings_.bus_label_font_size,
+                   color, true);
     }
   }
 }
 
 void MapRenderer::RenderStopCircles(
-    svg::Document &doc, const SphereProjector &projector,
-    const std::map<std::string_view, const Stop *> &unique_stops) const {
-  for (const auto &entry : unique_stops) {
-    const Stop *stop = entry.second;
+    svg::Document& doc, const SphereProjector& projector,
+    const std::map<std::string_view, const Stop*>& unique_stops) const {
+  for (const auto& entry : unique_stops) {
+    const Stop* stop = entry.second;
     svg::Circle circle;
     circle.SetCenter(projector(stop->coords))
         .SetRadius(settings_.stop_radius)
@@ -144,20 +147,21 @@ void MapRenderer::RenderStopCircles(
 }
 
 void MapRenderer::RenderStopLabels(
-    svg::Document &doc, const SphereProjector &projector,
-    const std::map<std::string_view, const Stop *> &unique_stops) const {
-  for (const auto &entry : unique_stops) {
-    const Stop *stop = entry.second;
-    AddLabelPair(doc, projector(stop->coords), stop->name, settings_.stop_label_offset,
-                 settings_.stop_label_font_size, std::string("black"), false);
+    svg::Document& doc, const SphereProjector& projector,
+    const std::map<std::string_view, const Stop*>& unique_stops) const {
+  for (const auto& entry : unique_stops) {
+    const Stop* stop = entry.second;
+    AddLabelPair(doc, projector(stop->coords), stop->name,
+                 settings_.stop_label_offset, settings_.stop_label_font_size,
+                 std::string("black"), false);
   }
 }
 
 svg::Document MapRenderer::RenderRouteMap(
-    const std::vector<const Bus *> &sorted_buses) const {
+    const std::vector<const Bus*>& sorted_buses) const {
   std::vector<database::geo::Coordinates> coords;
-  for (const Bus *bus : sorted_buses) {
-    for (const Stop *stop : bus->route) {
+  for (const Bus* bus : sorted_buses) {
+    for (const Stop* stop : bus->route) {
       coords.push_back(stop->coords);
     }
   }
@@ -182,4 +186,4 @@ svg::Document MapRenderer::RenderRouteMap(
   return doc;
 }
 
-} // namespace renderer
+}  // namespace renderer
