@@ -6,6 +6,7 @@
 #include "map_renderer.h"
 #include "request_handler.h"
 #include "transport_catalogue.h"
+#include "transport_router.h"
 
 class JsonReader {
   public:
@@ -14,6 +15,7 @@ class JsonReader {
     void LoadBaseRequests(const json::Document& doc);
 
     static renderer::RenderSettings ParseRenderSettings(const json::Document& doc);
+    static routing::RoutingSettings ParseRoutingSettings(const json::Document& doc);
 
     json::Document ProcessStatRequests(const json::Document& doc, const RequestHandler& handler) const;
 
@@ -30,5 +32,7 @@ class JsonReader {
     json::Node BuildBusResponse(int request_id, std::string_view name, const RequestHandler& handler) const;
     json::Node BuildStopResponse(int request_id, std::string_view name, const RequestHandler& handler) const;
     json::Node BuildMapResponse(int request_id, const RequestHandler& handler) const;
+    json::Node BuildRouteResponse(int request_id, std::string_view from, std::string_view to,
+                                  const RequestHandler& handler) const;
     static json::Node BuildErrorResponse(int request_id);
 };

@@ -5,6 +5,7 @@
 #include "map_renderer.h"
 #include "request_handler.h"
 #include "transport_catalogue.h"
+#include "transport_router.h"
 
 int main() {
     std::ios::sync_with_stdio(false);
@@ -16,9 +17,13 @@ int main() {
     JsonReader reader(catalogue);
     reader.LoadBaseRequests(doc);
 
-    renderer::RenderSettings settings = JsonReader::ParseRenderSettings(doc);
-    renderer::MapRenderer map_renderer(settings);
-    RequestHandler handler(catalogue, map_renderer);
+    renderer::RenderSettings render_settings = JsonReader::ParseRenderSettings(doc);
+    renderer::MapRenderer map_renderer(render_settings);
+
+    routing::RoutingSettings routing_settings = JsonReader::ParseRoutingSettings(doc);
+    routing::TransportRouter router(catalogue, routing_settings);
+
+    RequestHandler handler(catalogue, map_renderer, router);
 
     json::Print(reader.ProcessStatRequests(doc, handler), std::cout);
 

@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <cstdint>
 #include <deque>
-#include <format>
 #include <functional>
 #include <optional>
 #include <string>
@@ -29,28 +28,26 @@ using database::StopsPair;
 
 class TransportCatalogue {
   public:
-    explicit TransportCatalogue() = default;
-
+    TransportCatalogue() = default;
     ~TransportCatalogue() = default;
 
     void AddBus(const std::string& name, const std::vector<std::string_view>& route_names, bool is_roundtrip);
-
     void AddStop(const std::string& name, Coordinates coords);
-
     void SetStopDistance(const Stop* from, const Stop* to, int64_t distance);
 
     const Bus* FindBus(std::string_view name) const;
-
     const Stop* FindStop(std::string_view name) const;
 
     std::optional<BusInfoResult> BusInfo(std::string_view name) const;
-
     std::optional<std::reference_wrapper<const BusesByStop>> StopInfo(std::string_view name) const;
 
     int64_t GetDistance(const Stop* from, const Stop* to) const;
 
     const std::deque<Bus>& GetAllBuses() const {
         return buses_deque_;
+    }
+    const std::deque<Stop>& GetAllStops() const {
+        return stops_deque_;
     }
 
   private:
@@ -94,8 +91,8 @@ class TransportCatalogue {
         }
 
         bool is_first = true;
-        Coordinates first;
-        Coordinates second;
+        Coordinates first{};
+        Coordinates second{};
 
         for (const Stop* stop_ptr : bus->route) {
             if (is_first) {
@@ -119,8 +116,8 @@ class TransportCatalogue {
         }
 
         bool is_first = true;
-        const Stop* first;
-        const Stop* second;
+        const Stop* first = nullptr;
+        const Stop* second = nullptr;
 
         for (const Stop* stop_ptr : bus->route) {
             if (is_first) {

@@ -5,8 +5,8 @@
 #include <vector>
 
 RequestHandler::RequestHandler(const database::transport_catalogue::TransportCatalogue& db,
-                               const renderer::MapRenderer& renderer)
-    : db_(db), renderer_(renderer) {
+                               const renderer::MapRenderer& renderer, const routing::TransportRouter& router)
+    : db_(db), renderer_(renderer), router_(router) {
 }
 
 std::optional<database::BusInfoResult> RequestHandler::GetBusStat(std::string_view bus_name) const {
@@ -16,6 +16,10 @@ std::optional<database::BusInfoResult> RequestHandler::GetBusStat(std::string_vi
 std::optional<std::reference_wrapper<const database::BusesByStop>>
 RequestHandler::GetStopStat(std::string_view stop_name) const {
     return db_.StopInfo(stop_name);
+}
+
+std::optional<routing::RouteInfo> RequestHandler::GetRouteInfo(std::string_view from, std::string_view to) const {
+    return router_.BuildRoute(from, to);
 }
 
 std::string RequestHandler::RenderMap() const {

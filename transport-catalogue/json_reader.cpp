@@ -2,7 +2,9 @@
 
 #include <algorithm>
 #include <string>
+#include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "json_builder.h"
@@ -134,6 +136,22 @@ renderer::RenderSettings JsonReader::ParseRenderSettings(const json::Document& d
     return settings;
 }
 
+routing::RoutingSettings JsonReader::ParseRoutingSettings(const json::Document& doc) {
+    routing::RoutingSettings settings;
+
+    const json::Dict& root = doc.GetRoot().AsDict();
+    auto it = root.find("routing_settings"s);
+    if (it == root.end()) {
+        return settings;
+    }
+    const json::Dict& rs = it->second.AsDict();
+
+    settings.bus_wait_time = rs.at("bus_wait_time"s).AsInt();
+    settings.bus_velocity = rs.at("bus_velocity"s).AsDouble();
+
+    return settings;
+}
+
 json::Node JsonReader::BuildErrorResponse(int request_id) {
     return json::Builder{}
         .StartDict()
@@ -206,6 +224,47 @@ json::Node JsonReader::BuildMapResponse(int request_id, const RequestHandler& ha
         .Build();
 }
 
+json::Node JsonReader::BuildRouteResponse(int request_id, std::string_view from, std::string_view to,
+                                          const RequestHandler& handler) const {
+    const auto route = handler.GetRouteInfo(from, to);
+    if (!route) {
+        return BuildErrorResponse(request_id);
+    }
+
+    json::Array items;
+    items.reserve(route->items.size());
+    for (const routing::RouteItem& item : route->items) {
+        std::visit(
+            [&items](const auto& value) {
+                using T = std::decay_t<decltype(value)>;
+                json::Dict item_dict;
+                if constexpr (std::is_same_v<T, routing::WaitItem>) {
+                    item_dict["type"s] = json::Node("Wait"s);
+                    item_dict["stop_name"s] = json::Node(value.stop_name);
+                    item_dict["time"s] = json::Node(value.time);
+                } else {
+                    item_dict["type"s] = json::Node("Bus"s);
+                    item_dict["bus"s] = json::Node(value.bus_name);
+                    item_dict["span_count"s] = json::Node(value.span_count);
+                    item_dict["time"s] = json::Node(value.time);
+                }
+                items.emplace_back(std::move(item_dict));
+            },
+            item);
+    }
+
+    return json::Builder{}
+        .StartDict()
+        .Key("request_id"s)
+        .Value(request_id)
+        .Key("total_time"s)
+        .Value(route->total_time)
+        .Key("items"s)
+        .Value(std::move(items))
+        .EndDict()
+        .Build();
+}
+
 json::Node JsonReader::BuildResponse(const json::Dict& request, const RequestHandler& handler) const {
     const int request_id = request.at("id"s).AsInt();
     const std::string& type = request.at("type"s).AsString();
@@ -218,6 +277,9 @@ json::Node JsonReader::BuildResponse(const json::Dict& request, const RequestHan
     }
     if (type == "Map"s) {
         return BuildMapResponse(request_id, handler);
+    }
+    if (type == "Route"s) {
+        return BuildRouteResponse(request_id, request.at("from"s).AsString(), request.at("to"s).AsString(), handler);
     }
     return BuildErrorResponse(request_id);
 }
