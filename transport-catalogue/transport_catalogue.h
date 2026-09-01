@@ -31,8 +31,8 @@ class TransportCatalogue {
     TransportCatalogue() = default;
     ~TransportCatalogue() = default;
 
-    void AddBus(const std::string& name, const std::vector<std::string_view>& route_names, bool is_roundtrip);
-    void AddStop(const std::string& name, Coordinates coords);
+    void AddBus(std::string name, const std::vector<std::string_view>& route_names, bool is_roundtrip);
+    void AddStop(std::string name, Coordinates coords);
     void SetStopDistance(const Stop* from, const Stop* to, int64_t distance);
 
     const Bus* FindBus(std::string_view name) const;

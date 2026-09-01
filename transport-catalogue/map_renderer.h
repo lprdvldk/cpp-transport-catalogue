@@ -2,8 +2,10 @@
 
 #include <algorithm>
 #include <cmath>
+#include <concepts>
 #include <map>
 #include <optional>
+#include <ranges>
 #include <string_view>
 #include <unordered_map>
 #include <vector>
@@ -31,23 +33,18 @@ struct RenderSettings {
 
 class SphereProjector {
   public:
-    template <typename PointInputIt>
-    SphereProjector(PointInputIt points_begin, PointInputIt points_end, double max_width, double max_height,
-                    double padding)
-        : padding_(padding) {
-        if (points_begin == points_end) {
+    template <std::ranges::input_range Range>
+        requires std::same_as<std::ranges::range_value_t<Range>, database::geo::Coordinates>
+    SphereProjector(const Range& points, double max_width, double max_height, double padding) : padding_(padding) {
+        if (std::ranges::empty(points)) {
             return;
         }
 
-        const auto [left_it, right_it] = std::minmax_element(points_begin, points_end, [](auto lhs, auto rhs) {
-            return lhs.lng < rhs.lng;
-        });
+        const auto [left_it, right_it] = std::ranges::minmax_element(points, {}, &database::geo::Coordinates::lng);
         min_lon_ = left_it->lng;
         const double max_lon = right_it->lng;
 
-        const auto [bottom_it, top_it] = std::minmax_element(points_begin, points_end, [](auto lhs, auto rhs) {
-            return lhs.lat < rhs.lat;
-        });
+        const auto [bottom_it, top_it] = std::ranges::minmax_element(points, {}, &database::geo::Coordinates::lat);
         const double min_lat = bottom_it->lat;
         max_lat_ = top_it->lat;
 

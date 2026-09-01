@@ -154,7 +154,7 @@ svg::Document MapRenderer::RenderRouteMap(const std::vector<const Bus*>& sorted_
         }
     }
 
-    SphereProjector projector(coords.begin(), coords.end(), settings_.width, settings_.height, settings_.padding);
+    SphereProjector projector(coords, settings_.width, settings_.height, settings_.padding);
 
     svg::Document doc;
 

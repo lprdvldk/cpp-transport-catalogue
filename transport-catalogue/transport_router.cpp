@@ -6,8 +6,7 @@ TransportRouter::TransportRouter(const TransportCatalogue& catalogue, RoutingSet
     : catalogue_(catalogue), build_(BuildGraph(catalogue, settings)), router_(build_.graph) {
 }
 
-TransportRouter::BuildData TransportRouter::BuildGraph(const TransportCatalogue& catalogue,
-                                                       const RoutingSettings& settings) {
+TransportRouter::BuildData TransportRouter::BuildGraph(const TransportCatalogue& catalogue, RoutingSettings settings) {
     BuildData data;
     const auto& stops = catalogue.GetAllStops();
 

@@ -63,7 +63,7 @@ class TransportRouter {
         std::unordered_map<const Stop*, graph::VertexId> stop_wait_vertex;
     };
 
-    static BuildData BuildGraph(const TransportCatalogue& catalogue, const RoutingSettings& settings);
+    static BuildData BuildGraph(const TransportCatalogue& catalogue, RoutingSettings settings);
 
     const TransportCatalogue& catalogue_;
     BuildData build_;
