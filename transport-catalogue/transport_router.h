@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -57,17 +58,18 @@ class TransportRouter {
         RouteItem item;
     };
 
-    struct BuildData {
-        graph::DirectedWeightedGraph<double> graph;
-        std::vector<EdgeInfo> edge_infos;
-        std::unordered_map<const Stop*, graph::VertexId> stop_wait_vertex;
-    };
-
-    static BuildData BuildGraph(const TransportCatalogue& catalogue, RoutingSettings settings);
+    void BuildGraph();
+    void AddStopVertices();
+    void AddBusEdges();
 
     const TransportCatalogue& catalogue_;
-    BuildData build_;
-    graph::Router<double> router_;
+    RoutingSettings settings_;
+
+    graph::DirectedWeightedGraph<double> graph_;
+    std::vector<EdgeInfo> edge_infos_;
+    std::unordered_map<const Stop*, graph::VertexId> stop_wait_vertex_;
+
+    std::unique_ptr<graph::Router<double>> router_;
 };
 
 } // namespace routing

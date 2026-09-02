@@ -17,5 +17,5 @@ cmake --build .
 ```
 
 ```bash
-find ./transport-catalogue -iname '*.h' -o -iname '*.cpp' | xargs clang-format -i -style=Google 
+find ./transport-catalogue -iname '*.h' -o -iname '*.cpp' | xargs clang-format -i
 ```
