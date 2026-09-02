@@ -6,7 +6,7 @@
 
 ```bash
 cd transport-catalogue
-clang++ -std=c++20 -Wall -Wextra -O2 *.cpp -o transport_catalogue
+clang++ -std=c++20 -Wall -Wextra -Wpedantic -O2 *.cpp -o transport_catalogue
 ./transport_catalogue
 ```
 
